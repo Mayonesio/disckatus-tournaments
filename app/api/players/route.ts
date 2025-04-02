@@ -3,7 +3,7 @@ import { connectToDatabase } from "@/lib/mongodb"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth-options"
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions)
 
@@ -11,8 +11,26 @@ export async function GET() {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
+    const { searchParams } = new URL(request.url)
+    const query = searchParams.get("query") || ""
+
     const { db } = await connectToDatabase()
-    const players = await db.collection("players").find({}).toArray()
+    
+    // Crear un filtro de búsqueda si se proporciona una consulta
+    const filter = query
+      ? {
+          $or: [
+            { name: { $regex: query, $options: "i" } },
+            { email: { $regex: query, $options: "i" } },
+          ],
+        }
+      : {}
+
+    const players = await db
+      .collection("players")
+      .find(filter)
+      .sort({ name: 1 })
+      .toArray()
 
     return NextResponse.json(players)
   } catch (error) {
@@ -44,16 +62,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Ya existe un jugador con este email" }, { status: 400 })
     }
 
-    const result = await db.collection("players").insertOne({
+    const newPlayer = {
       ...playerData,
       createdAt: new Date(),
       updatedAt: new Date(),
-    })
+    }
 
-    return NextResponse.json({ success: true, player: result })
+    const result = await db.collection("players").insertOne(newPlayer)
+
+    return NextResponse.json({ 
+      success: true, 
+      player: { 
+        _id: result.insertedId,
+        ...newPlayer
+      } 
+    })
   } catch (error) {
     console.error("Error al crear jugador:", error)
     return NextResponse.json({ error: "Error al crear jugador" }, { status: 500 })
   }
 }
-

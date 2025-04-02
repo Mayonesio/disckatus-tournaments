@@ -2,7 +2,7 @@ import type { NextAuthOptions } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { connectToDatabase } from "@/lib/mongodb"
-import { compare } from "bcrypt"
+import { compare } from "bcryptjs" // Cambiado de bcrypt a bcryptjs
 import { MongoDBAdapter } from "@auth/mongodb-adapter"
 import clientPromise from "@/lib/mongodb"
 

@@ -1,28 +1,27 @@
-import NextAuth, { DefaultSession, NextAuthOptions } from "next-auth"
-import { JWT } from "next-auth/jwt"
+import NextAuth, { type DefaultSession, type NextAuthOptions } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { compare } from "bcrypt"
+import { compare } from "bcryptjs" // Cambiado de bcrypt a bcryptjs
 import { connectToDatabase } from "@/lib/mongodb"
 
 // Extender los tipos de NextAuth
 declare module "next-auth" {
   interface Session {
     user: {
-      id: string;
-      role: string;
+      id: string
+      role: string
     } & DefaultSession["user"]
   }
-  
+
   interface User {
-    role?: string;
+    role?: string
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
-    role?: string;
-    id?: string;
+    role?: string
+    id?: string
   }
 }
 
@@ -37,7 +36,7 @@ const authOptions: NextAuthOptions = {
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -63,14 +62,14 @@ const authOptions: NextAuthOptions = {
             name: user.name,
             email: user.email,
             image: user.image,
-            role: user.role || "player"
+            role: user.role || "player",
           }
         } catch (error) {
           console.error("Error en authorize:", error)
           return null
         }
-      }
-    })
+      },
+    }),
   ],
   callbacks: {
     async jwt({ token, user }) {
@@ -86,7 +85,7 @@ const authOptions: NextAuthOptions = {
         session.user.id = token.id as string
       }
       return session
-    }
+    },
   },
   pages: {
     signIn: "/login",
@@ -103,3 +102,4 @@ const handler = NextAuth(authOptions)
 
 // Exportar los métodos GET y POST
 export { handler as GET, handler as POST }
+
