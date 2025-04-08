@@ -31,7 +31,10 @@ const playerFormSchema = z.object({
   position: z.string().optional().or(z.literal("")),
   jerseyNumber: z.coerce.number().optional().or(z.literal(0)),
   experience: z.coerce.number().optional().or(z.literal(0)),
+  height: z.coerce.number().optional().or(z.literal(0)),
+  weight: z.coerce.number().optional().or(z.literal(0)),
   notes: z.string().optional(),
+  adminNotes: z.string().optional(),
 })
 
 type PlayerFormValues = z.infer<typeof playerFormSchema>
@@ -62,7 +65,10 @@ export function PlayerForm({ playerId }: PlayerFormProps) {
       position: "",
       jerseyNumber: undefined,
       experience: undefined,
+      height: undefined,
+      weight: undefined,
       notes: "",
+      adminNotes: "",
     },
   })
 
@@ -89,7 +95,10 @@ export function PlayerForm({ playerId }: PlayerFormProps) {
             position: data.position || "",
             jerseyNumber: data.jerseyNumber || undefined,
             experience: data.experience || undefined,
+            height: data.height || undefined,
+            weight: data.weight || undefined,
             notes: data.notes || "",
+            adminNotes: data.adminNotes || "",
           })
           setPlayer(data)
           setIsLoading(false)
@@ -124,6 +133,12 @@ export function PlayerForm({ playerId }: PlayerFormProps) {
       return false
     }
 
+    // Verificar si el email del jugador coincide con el email del usuario
+    if (session.user.email === playerData.email) {
+      setPermissionError(null)
+      return true
+    }
+
     // Si estamos editando, verificar si el usuario es el propietario del perfil
     if (playerData?.userId === session.user.id) {
       setPermissionError(null)
@@ -131,7 +146,7 @@ export function PlayerForm({ playerId }: PlayerFormProps) {
     }
 
     setPermissionError(
-      `No eres el propietario de este perfil. Tu ID: ${session.user.id}, ID del propietario: ${playerData?.userId || "No asignado"}`,
+      `No eres el propietario de este perfil. Tu ID: ${session.user.id}, ID del propietario: ${playerData?.userId || "No asignado"}, Tu email: ${session.user.email}, Email del jugador: ${playerData.email}`,
     )
     return false
   }
@@ -145,6 +160,9 @@ export function PlayerForm({ playerId }: PlayerFormProps) {
 
     // Si estamos creando un nuevo jugador, solo los administradores pueden hacerlo
     if (!isEditing) return false
+
+    // Verificar si el email del jugador coincide con el email del usuario
+    if (session.user.email === player?.email) return true
 
     // Si estamos editando, verificar si el usuario es el propietario del perfil
     return player?.userId === session.user.id
@@ -181,7 +199,9 @@ export function PlayerForm({ playerId }: PlayerFormProps) {
               <p className="mt-2">Estado de sesión: {status}</p>
               <p>Rol de usuario: {session?.user?.role || "No disponible"}</p>
               <p>ID de usuario: {session?.user?.id || "No disponible"}</p>
+              <p>Email de usuario: {session?.user?.email || "No disponible"}</p>
               <p>ID de jugador: {player?._id || "No disponible"}</p>
+              <p>Email de jugador: {player?.email || "No disponible"}</p>
               <p>ID de propietario: {player?.userId || "No asignado"}</p>
             </div>
           )}
@@ -194,6 +214,10 @@ export function PlayerForm({ playerId }: PlayerFormProps) {
       </Card>
     )
   }
+
+  // Determinar qué campos puede editar el usuario
+  const isAdmin = session?.user?.role === "admin"
+  const isOwner = player?.userId === session?.user?.id || session?.user?.email === player?.email
 
   // Manejar el envío del formulario
   async function onSubmit(data: PlayerFormValues) {
@@ -209,6 +233,7 @@ export function PlayerForm({ playerId }: PlayerFormProps) {
       const url = isEditing ? `/api/players/${playerId}` : "/api/players"
       const method = isEditing ? "PUT" : "POST"
 
+      // No intentamos asignar el userId aquí, lo haremos en el servidor
       const response = await fetch(url, {
         method: method,
         headers: {
@@ -255,7 +280,11 @@ export function PlayerForm({ playerId }: PlayerFormProps) {
                   <FormItem>
                     <FormLabel>Nombre completo</FormLabel>
                     <FormControl>
-                      <Input placeholder="Nombre y apellidos" {...field} disabled={isLoading} />
+                      <Input
+                        placeholder="Nombre y apellidos"
+                        {...field}
+                        disabled={isLoading || (!isAdmin && !isOwner)}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -269,7 +298,12 @@ export function PlayerForm({ playerId }: PlayerFormProps) {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="email@ejemplo.com" {...field} disabled={isLoading} />
+                      <Input
+                        type="email"
+                        placeholder="email@ejemplo.com"
+                        {...field}
+                        disabled={isLoading || (!isAdmin && !isOwner)}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -283,7 +317,7 @@ export function PlayerForm({ playerId }: PlayerFormProps) {
                   <FormItem>
                     <FormLabel>Teléfono</FormLabel>
                     <FormControl>
-                      <Input placeholder="600123456" {...field} disabled={isLoading} />
+                      <Input placeholder="600123456" {...field} disabled={isLoading || (!isAdmin && !isOwner)} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -296,7 +330,11 @@ export function PlayerForm({ playerId }: PlayerFormProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Género</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      disabled={isLoading || (!isAdmin && !isOwner)}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecciona un género" />
@@ -320,7 +358,7 @@ export function PlayerForm({ playerId }: PlayerFormProps) {
                   <FormItem>
                     <FormLabel>Fecha de nacimiento</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} disabled={isLoading} />
+                      <Input type="date" {...field} disabled={isLoading || (!isAdmin && !isOwner)} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -334,7 +372,11 @@ export function PlayerForm({ playerId }: PlayerFormProps) {
                   <FormItem>
                     <FormLabel>Posición</FormLabel>
                     <FormControl>
-                      <Input placeholder="Handler, Cutter, etc." {...field} disabled={isLoading} />
+                      <Input
+                        placeholder="Handler, Cutter, etc."
+                        {...field}
+                        disabled={isLoading || (!isAdmin && !isOwner)}
+                      />
                     </FormControl>
                     <FormDescription>Posición que juega habitualmente</FormDescription>
                     <FormMessage />
@@ -349,7 +391,7 @@ export function PlayerForm({ playerId }: PlayerFormProps) {
                   <FormItem>
                     <FormLabel>Número de camiseta</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="0" {...field} disabled={isLoading} />
+                      <Input type="number" placeholder="0" {...field} disabled={isLoading || (!isAdmin && !isOwner)} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -363,7 +405,40 @@ export function PlayerForm({ playerId }: PlayerFormProps) {
                   <FormItem>
                     <FormLabel>Años de experiencia</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="0" {...field} disabled={isLoading} />
+                      <Input type="number" placeholder="0" {...field} disabled={isLoading || (!isAdmin && !isOwner)} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="height"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Altura (cm)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="175"
+                        {...field}
+                        disabled={isLoading || (!isAdmin && !isOwner)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="weight"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Peso (kg)</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="70" {...field} disabled={isLoading || (!isAdmin && !isOwner)} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -377,7 +452,11 @@ export function PlayerForm({ playerId }: PlayerFormProps) {
                   <FormItem>
                     <FormLabel>Perfil Ultimate Central</FormLabel>
                     <FormControl>
-                      <Input placeholder="https://ultimatecentral.com/u/username" {...field} disabled={isLoading} />
+                      <Input
+                        placeholder="https://ultimatecentral.com/u/username"
+                        {...field}
+                        disabled={isLoading || (!isAdmin && !isOwner)}
+                      />
                     </FormControl>
                     <FormDescription>URL del perfil en Ultimate Central (opcional)</FormDescription>
                     <FormMessage />
@@ -391,7 +470,7 @@ export function PlayerForm({ playerId }: PlayerFormProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Estado Federación</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading || !isAdmin}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecciona un estado" />
@@ -403,6 +482,7 @@ export function PlayerForm({ playerId }: PlayerFormProps) {
                         <SelectItem value="No inscrito">No inscrito</SelectItem>
                       </SelectContent>
                     </Select>
+                    <FormDescription>Solo los administradores pueden cambiar este campo</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -420,7 +500,7 @@ export function PlayerForm({ playerId }: PlayerFormProps) {
                       placeholder="Información adicional sobre el jugador"
                       className="min-h-[100px]"
                       {...field}
-                      disabled={isLoading}
+                      disabled={isLoading || (!isAdmin && !isOwner)}
                     />
                   </FormControl>
                   <FormDescription>Información adicional relevante (opcional)</FormDescription>
@@ -428,6 +508,28 @@ export function PlayerForm({ playerId }: PlayerFormProps) {
                 </FormItem>
               )}
             />
+
+            {isAdmin && (
+              <FormField
+                control={form.control}
+                name="adminNotes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Notas administrativas</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Notas solo visibles para administradores"
+                        className="min-h-[100px]"
+                        {...field}
+                        disabled={isLoading || !isAdmin}
+                      />
+                    </FormControl>
+                    <FormDescription>Notas internas solo visibles para administradores</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
           </CardContent>
           <CardFooter className="flex justify-between">
             <Button variant="outline" type="button" onClick={() => router.back()} disabled={isLoading}>
@@ -443,4 +545,3 @@ export function PlayerForm({ playerId }: PlayerFormProps) {
     </Card>
   )
 }
-

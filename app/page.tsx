@@ -18,7 +18,7 @@ export default function Home() {
               <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
                 <Link href="/dashboard">Acceder al Dashboard</Link>
               </Button>
-              <Button asChild variant="outline" className="border-primary text-white hover:bg-primary/10">
+              <Button asChild  className="border-primary text-primary-foreground hover:bg-primary/90">
                 <Link href="/tournaments">Ver Torneos</Link>
               </Button>
             </div>

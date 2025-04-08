@@ -3,9 +3,11 @@ import { connectToDatabase } from "@/lib/mongodb"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth-options"
 import { ObjectId } from "mongodb"
+import { serializePlayer } from "@/lib/utils-server" // Importar desde utils-server
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
+    const id = params.id
     const session = await getServerSession(authOptions)
 
     if (!session) {
@@ -13,12 +15,14 @@ export async function GET(request: Request, { params }: { params: { id: string }
     }
 
     const { db } = await connectToDatabase()
-    const player = await db.collection("players").findOne({ _id: new ObjectId(params.id) })
+    const playerDoc = await db.collection("players").findOne({ _id: new ObjectId(id) })
 
-    if (!player) {
+    if (!playerDoc) {
       return NextResponse.json({ error: "Jugador no encontrado" }, { status: 404 })
     }
 
+    // Serializar el documento antes de devolverlo
+    const player = serializePlayer(playerDoc)
     return NextResponse.json(player)
   } catch (error) {
     console.error("Error al obtener jugador:", error)
@@ -28,6 +32,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
+    const id = params.id
     const session = await getServerSession(authOptions)
 
     if (!session) {
@@ -37,7 +42,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     const { db } = await connectToDatabase()
 
     // Obtener el jugador actual
-    const currentPlayer = await db.collection("players").findOne({ _id: new ObjectId(params.id) })
+    const currentPlayer = await db.collection("players").findOne({ _id: new ObjectId(id) })
 
     if (!currentPlayer) {
       return NextResponse.json({ error: "Jugador no encontrado" }, { status: 404 })
@@ -46,23 +51,20 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     // Verificar permisos (admin o el propio jugador)
     const isAdmin = session.user.role === "admin"
     const isOwner = currentPlayer.userId === session.user.id
+    const isEmailMatch = currentPlayer.email === session.user.email
 
-    console.log("Verificación de permisos:", {
-      isAdmin,
-      isOwner,
-      userId: session.user.id,
-      playerUserId: currentPlayer.userId,
-    })
-
-    if (!isAdmin && !isOwner) {
+    if (!isAdmin && !isOwner && !isEmailMatch) {
       return NextResponse.json(
         {
           error: "No tienes permisos para editar este jugador",
           debug: {
             isAdmin,
             isOwner,
+            isEmailMatch,
             userId: session.user.id,
             playerUserId: currentPlayer.userId,
+            userEmail: session.user.email,
+            playerEmail: currentPlayer.email,
           },
         },
         { status: 403 },
@@ -77,32 +79,75 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     }
 
     // Verificar si el email ya existe en otro jugador
-    const existingPlayer = await db.collection("players").findOne({
-      email: playerData.email,
-      _id: { $ne: new ObjectId(params.id) },
-    })
+    if (playerData.email !== currentPlayer.email) {
+      const existingPlayer = await db.collection("players").findOne({
+        email: playerData.email,
+        _id: { $ne: new ObjectId(id) },
+      })
 
-    if (existingPlayer) {
-      return NextResponse.json({ error: "Ya existe otro jugador con este email" }, { status: 400 })
+      if (existingPlayer) {
+        return NextResponse.json({ error: "Ya existe otro jugador con este email" }, { status: 400 })
+      }
     }
 
-    // Si el usuario es un jugador normal (no admin), limitar los campos que puede editar
-    let updateData = playerData
+    // Determinar qué campos puede editar cada tipo de usuario
+    let updateData: Record<string, any> = {}
 
-    if (!isAdmin) {
-      // Los jugadores normales solo pueden editar ciertos campos
+    // Si el usuario es propietario por email pero no tiene userId asignado, asignarlo
+    if (isEmailMatch) {
+      // Siempre asignar el userId si hay coincidencia de email, incluso si ya existe uno
+      // Esto garantiza que el userId esté actualizado
+      updateData.userId = session.user.id
+    }
+
+    if (isOwner || isEmailMatch) {
+      // El propietario puede editar todos los campos de su perfil excepto el estado de federación
       updateData = {
+        ...updateData,
+        name: playerData.name,
+        email: playerData.email,
         phone: playerData.phone,
+        gender: playerData.gender,
+        birthdate: playerData.birthdate,
         ultimateCentral: playerData.ultimateCentral,
         position: playerData.position,
         jerseyNumber: playerData.jerseyNumber,
         experience: playerData.experience,
+        height: playerData.height,
+        weight: playerData.weight,
         notes: playerData.notes,
+        // No puede cambiar su propio estado de federación
       }
     }
 
+    if (isAdmin) {
+      if (isOwner || isEmailMatch) {
+        // Si el admin es también el propietario, puede editar todo
+        updateData = {
+          ...updateData,
+          ...playerData,
+          // Asegurarse de que el userId se mantenga
+          userId: updateData.userId || currentPlayer.userId,
+        }
+      } else {
+        // El admin puede cambiar el estado de federación y añadir notas administrativas
+        updateData = {
+          ...updateData, // Mantener los cambios del propietario si los hay
+          federationStatus: playerData.federationStatus,
+          adminNotes: playerData.adminNotes,
+        }
+      }
+    }
+
+    // Asegurarse de que el userId siempre se mantenga si ya existe
+    if (currentPlayer.userId && !updateData.userId) {
+      updateData.userId = currentPlayer.userId
+    }
+
+    console.log("Datos de actualización:", updateData)
+
     const result = await db.collection("players").updateOne(
-      { _id: new ObjectId(params.id) },
+      { _id: new ObjectId(id) },
       {
         $set: {
           ...updateData,
@@ -124,6 +169,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
+    const id = params.id
     const session = await getServerSession(authOptions)
 
     if (!session || session.user.role !== "admin") {
@@ -134,7 +180,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
 
     // Verificar si el jugador está registrado en algún torneo
     const registrations = await db.collection("registrations").findOne({
-      playerId: new ObjectId(params.id),
+      playerId: new ObjectId(id),
     })
 
     if (registrations) {
@@ -147,7 +193,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     }
 
     const result = await db.collection("players").deleteOne({
-      _id: new ObjectId(params.id),
+      _id: new ObjectId(id),
     })
 
     if (result.deletedCount === 0) {
@@ -160,4 +206,3 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     return NextResponse.json({ error: "Error al eliminar jugador" }, { status: 500 })
   }
 }
-

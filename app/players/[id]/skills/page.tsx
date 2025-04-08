@@ -4,40 +4,21 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth-options"
 import { connectToDatabase } from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
-import { PlayerProfile } from "@/components/players/player-profile"
+import { PlayerSkillsForm } from "@/components/players/player-skills-form"
 import { serializePlayer } from "@/lib/utils-server" // Importar desde utils-server
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const id = params.id
-
-  try {
-    const { db } = await connectToDatabase()
-    const player = await db.collection("players").findOne({ _id: new ObjectId(id) })
-
-    if (!player) {
-      return {
-        title: "Jugador no encontrado | Disckatus Ultimate Madrid",
-      }
-    }
-
-    return {
-      title: `${player.name} | Disckatus Ultimate Madrid`,
-      description: `Perfil de ${player.name}, jugador de Disckatus Ultimate Madrid`,
-    }
-  } catch (error) {
-    return {
-      title: "Perfil de Jugador | Disckatus Ultimate Madrid",
-    }
-  }
+export const metadata: Metadata = {
+  title: "Editar Habilidades | Disckatus Ultimate Madrid",
+  description: "Actualiza tus habilidades de juego",
 }
 
-interface PlayerPageProps {
+interface PlayerSkillsPageProps {
   params: {
     id: string
   }
 }
 
-export default async function PlayerPage({ params }: PlayerPageProps) {
+export default async function PlayerSkillsPage({ params }: PlayerSkillsPageProps) {
   const session = await getServerSession(authOptions)
   const id = params.id
 
@@ -67,18 +48,27 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
     const isAdmin = session.user.role === "admin"
     const isOwner = player.userId === session.user.id
     const isEmailMatch = player.email === session.user.email
-    const canEdit = isAdmin || isOwner || isEmailMatch
 
-    // Si el usuario es propietario por email pero no tiene userId asignado, actualizarlo
-    if (isEmailMatch && !player.userId) {
-      await db.collection("players").updateOne({ _id: new ObjectId(id) }, { $set: { userId: session.user.id } })
-      // Actualizar el objeto player para reflejar el cambio
-      player.userId = session.user.id
+    if (!isAdmin && !isOwner && !isEmailMatch) {
+      return (
+        <div className="flex h-full items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold">Acceso denegado</h2>
+            <p className="mt-2">No tienes permisos para editar las habilidades de este jugador</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Debug: Tu ID: {session.user.id}, ID del jugador: {player.userId || "No asignado"}
+            </p>
+          </div>
+        </div>
+      )
     }
 
     return (
       <div className="flex-1 p-4 md:p-8 pt-6">
-        <PlayerProfile player={player} canEdit={canEdit} />
+        <div className="max-w-2xl mx-auto">
+          <h1 className="text-3xl font-bold mb-6">Editar Habilidades</h1>
+          <PlayerSkillsForm playerId={id} initialSkills={player.skills} />
+        </div>
       </div>
     )
   } catch (error) {
