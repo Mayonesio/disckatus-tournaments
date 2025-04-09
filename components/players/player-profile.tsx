@@ -1,8 +1,5 @@
 "use client"
-
-import type React from "react"
-import { useState, useRef } from "react"
-import Image from "next/image"
+import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { format } from "date-fns"
@@ -32,7 +29,6 @@ import {
   Phone,
   Edit,
   ExternalLink,
-  Upload,
   Trash,
   Award,
   Users,
@@ -43,8 +39,10 @@ import {
   Weight,
   Trophy,
   CheckCircle,
+  Camera,
 } from "lucide-react"
 import { useSession } from "next-auth/react"
+import { ProfileImageModal } from "./profile-image-modal"
 
 interface PlayerProfileProps {
   player: Player
@@ -56,7 +54,7 @@ export function PlayerProfile({ player, canEdit }: PlayerProfileProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isDeletingPlayer, setIsDeletingPlayer] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [imageModalOpen, setImageModalOpen] = useState(false)
   const { data: session } = useSession()
   const isAdmin = session?.user?.role === "admin"
 
@@ -88,28 +86,18 @@ export function PlayerProfile({ player, canEdit }: PlayerProfileProps) {
   }
 
   // Función para subir una imagen de perfil
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-
-    // Validar el tipo de archivo
-    if (!file.type.startsWith("image/")) {
-      toast.error("Por favor, selecciona una imagen válida")
-      return
-    }
-
-    // Validar el tamaño del archivo (máximo 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("La imagen no debe superar los 5MB")
-      return
-    }
-
+  const handleImageUpload = async (file: File) => {
     setIsUploading(true)
 
     try {
+      console.log("Cliente: Iniciando subida de imagen:", file.name, file.type, file.size)
+
       // Crear un FormData para enviar la imagen
       const formData = new FormData()
       formData.append("image", file)
+
+      console.log("Cliente: FormData creado, enviando solicitud...")
+      console.log("Cliente: URL de la API:", `/api/players/${player._id}/image`)
 
       // Enviar la imagen al servidor
       const response = await fetch(`/api/players/${player._id}/image`, {
@@ -117,18 +105,22 @@ export function PlayerProfile({ player, canEdit }: PlayerProfileProps) {
         body: formData,
       })
 
+      console.log("Cliente: Respuesta recibida, status:", response.status)
+
+      const data = await response.json()
+      console.log("Cliente: Datos de respuesta:", data)
+
       if (!response.ok) {
-        const data = await response.json()
         throw new Error(data.error || "Error al subir la imagen")
       }
 
-      const data = await response.json()
-
       toast.success("Imagen de perfil actualizada correctamente")
       router.refresh() // Recargar la página para mostrar la nueva imagen
+      return true
     } catch (error) {
-      console.error("Error al subir la imagen:", error)
+      console.error("Cliente: Error detallado al subir la imagen:", error)
       toast.error(error instanceof Error ? error.message : "Error al subir la imagen")
+      return false
     } finally {
       setIsUploading(false)
     }
@@ -139,19 +131,25 @@ export function PlayerProfile({ player, canEdit }: PlayerProfileProps) {
     setIsDeleting(true)
 
     try {
+      console.log("Cliente: Iniciando eliminación de imagen")
+
       const response = await fetch(`/api/players/${player._id}/image`, {
         method: "DELETE",
       })
 
+      console.log("Cliente: Respuesta de eliminación recibida, status:", response.status)
+
+      const data = await response.json()
+      console.log("Cliente: Datos de respuesta de eliminación:", data)
+
       if (!response.ok) {
-        const data = await response.json()
         throw new Error(data.error || "Error al eliminar la imagen")
       }
 
       toast.success("Imagen de perfil eliminada correctamente")
       router.refresh() // Recargar la página para mostrar el avatar por defecto
     } catch (error) {
-      console.error("Error al eliminar la imagen:", error)
+      console.error("Cliente: Error al eliminar la imagen:", error)
       toast.error(error instanceof Error ? error.message : "Error al eliminar la imagen")
     } finally {
       setIsDeleting(false)
@@ -217,6 +215,15 @@ export function PlayerProfile({ player, canEdit }: PlayerProfileProps) {
 
   return (
     <div className="space-y-6">
+      {/* Modal para subir/editar imagen de perfil */}
+      <ProfileImageModal
+        open={imageModalOpen}
+        onOpenChange={setImageModalOpen}
+        onSave={handleImageUpload}
+        playerId={player._id?.toString() || ""}
+      />
+
+      {/* Encabezado y botones de acción */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => router.back()}>
@@ -263,64 +270,59 @@ export function PlayerProfile({ player, canEdit }: PlayerProfileProps) {
           <div className="relative h-40 bg-gradient-to-r from-primary/80 to-primary">
             <div className="absolute -bottom-16 left-6 h-32 w-32 overflow-hidden rounded-full border-4 border-background shadow-xl">
               {player.imageUrl ? (
-                <Image
-                  src={player.imageUrl || "/placeholder.svg"}
-                  alt={player.name}
-                  width={128}
-                  height={128}
-                  className="h-full w-full object-cover"
-                />
+                <div className="relative h-full w-full">
+                  {/* Usamos img en lugar de Image para evitar problemas con imágenes base64 */}
+                  <img
+                    src={player.imageUrl || "/placeholder.svg"}
+                    alt={player.name}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
               ) : (
                 <Avatar className="h-full w-full">
                   <AvatarImage src="/placeholder-user.jpg" alt={player.name} />
                   <AvatarFallback className="text-4xl">{player.name.charAt(0)}</AvatarFallback>
                 </Avatar>
               )}
-            </div>
-            {canEdit && (
-              <div className="absolute right-4 top-4 flex gap-2">
+
+              {/* Botón de cámara superpuesto */}
+              {canEdit && (
                 <button
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-primary hover:bg-white"
-                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                  onClick={() => setImageModalOpen(true)}
                   disabled={isUploading}
                 >
-                  <Upload className="h-4 w-4" />
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleImageUpload}
-                    disabled={isUploading}
-                  />
+                  <Camera className="h-4 w-4" />
                 </button>
-                {player.imageUrl && (
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <button className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-destructive hover:bg-white">
-                        <Trash className="h-4 w-4" />
-                      </button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Esta acción eliminará la imagen de perfil actual.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDeleteImage} disabled={isDeleting}>
-                          Eliminar
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                )}
+              )}
+            </div>
+
+            {canEdit && player.imageUrl && (
+              <div className="absolute right-4 top-4">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <button className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-destructive hover:bg-white">
+                      <Trash className="h-4 w-4" />
+                    </button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                      <AlertDialogDescription>Esta acción eliminará la imagen de perfil actual.</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDeleteImage} disabled={isDeleting}>
+                        Eliminar
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             )}
           </div>
 
+          {/* El resto del componente permanece igual */}
           <CardHeader className="pt-20">
             <div className="flex items-center justify-between">
               <div>
@@ -345,7 +347,6 @@ export function PlayerProfile({ player, canEdit }: PlayerProfileProps) {
               )}
             </div>
           </CardHeader>
-
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col items-center justify-center rounded-lg bg-background p-3">
@@ -381,7 +382,6 @@ export function PlayerProfile({ player, canEdit }: PlayerProfileProps) {
               </div>
             </div>
           </CardContent>
-
           <CardFooter className="flex flex-col gap-2">
             {canEdit && (
               <>
@@ -419,7 +419,7 @@ export function PlayerProfile({ player, canEdit }: PlayerProfileProps) {
               <TabsTrigger value="tournaments">Torneos</TabsTrigger>
             </TabsList>
 
-            {/* Pestaña de habilidades */}
+            {/* Contenido de las pestañas */}
             <TabsContent value="skills" className="space-y-4">
               <Card>
                 <CardHeader>

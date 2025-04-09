@@ -5,7 +5,7 @@ import { authOptions } from "@/lib/auth-options"
 import { connectToDatabase } from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
 import { PlayerSkillsForm } from "@/components/players/player-skills-form"
-import { serializePlayer } from "@/lib/utils-server" // Importar desde utils-server
+import { serializePlayer } from "@/lib/utils-server"
 
 export const metadata: Metadata = {
   title: "Editar Habilidades | Disckatus Ultimate Madrid",
@@ -13,14 +13,12 @@ export const metadata: Metadata = {
 }
 
 interface PlayerSkillsPageProps {
-  params: {
-    id: string
-  }
+  params: Promise<{ id: string }>
 }
 
 export default async function PlayerSkillsPage({ params }: PlayerSkillsPageProps) {
   const session = await getServerSession(authOptions)
-  const id = params.id
+  const { id } = await params
 
   if (!session) {
     return (

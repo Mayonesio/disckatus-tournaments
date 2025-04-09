@@ -9,14 +9,12 @@ export const metadata: Metadata = {
 }
 
 interface EditPlayerPageProps {
-  params: {
-    id: string
-  }
+  params: Promise<{ id: string }>
 }
 
 export default async function EditPlayerPage({ params }: EditPlayerPageProps) {
   const session = await getServerSession(authOptions)
-  const id = params.id
+  const { id } = await params
 
   if (!session) {
     return (

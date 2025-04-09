@@ -5,10 +5,10 @@ import { authOptions } from "@/lib/auth-options"
 import { connectToDatabase } from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
 import { PlayerProfile } from "@/components/players/player-profile"
-import { serializePlayer } from "@/lib/utils-server" // Importar desde utils-server
+import { serializePlayer } from "@/lib/utils-server"
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const id = params.id
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params
 
   try {
     const { db } = await connectToDatabase()
@@ -32,14 +32,12 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
 }
 
 interface PlayerPageProps {
-  params: {
-    id: string
-  }
+  params: Promise<{ id: string }>
 }
 
 export default async function PlayerPage({ params }: PlayerPageProps) {
   const session = await getServerSession(authOptions)
-  const id = params.id
+  const { id } = await params
 
   if (!session) {
     return (

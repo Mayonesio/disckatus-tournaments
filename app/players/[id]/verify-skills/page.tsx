@@ -5,7 +5,7 @@ import { authOptions } from "@/lib/auth-options"
 import { connectToDatabase } from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
 import { PlayerSkillsVerification } from "@/components/players/player-skills-verification"
-import { serializePlayer } from "@/lib/utils-server" // Importar desde utils-server
+import { serializePlayer } from "@/lib/utils-server"
 
 export const metadata: Metadata = {
   title: "Verificar Habilidades | Disckatus Ultimate Madrid",
@@ -13,14 +13,12 @@ export const metadata: Metadata = {
 }
 
 interface VerifySkillsPageProps {
-  params: {
-    id: string
-  }
+  params: Promise<{ id: string }>
 }
 
 export default async function VerifySkillsPage({ params }: VerifySkillsPageProps) {
   const session = await getServerSession(authOptions)
-  const id = params.id
+  const { id } = await params
 
   if (!session) {
     redirect("/api/auth/signin")
