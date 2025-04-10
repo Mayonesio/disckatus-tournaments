@@ -84,15 +84,18 @@ export default async function TournamentPage({ params }: TournamentPageProps) {
     // Crear un mapa de jugadores para acceso rápido
     const playerMap = new Map()
     players.forEach((player) => {
-      playerMap.set(player._id.toString(), {
-        _id: player._id.toString(),
-        name: player.name,
-        email: player.email,
-        imageUrl: player.imageUrl,
-        gender: player.gender,
-        position: player.position,
-        jerseyNumber: player.jerseyNumber,
-      })
+      if (player._id) {
+        // Verificar que _id existe
+        playerMap.set(player._id.toString(), {
+          _id: player._id.toString(),
+          name: player.name,
+          email: player.email,
+          imageUrl: player.imageUrl,
+          gender: player.gender,
+          position: player.position,
+          jerseyNumber: player.jerseyNumber,
+        })
+      }
     })
 
     // Serializar manualmente las inscripciones y añadir la información de los jugadores

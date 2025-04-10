@@ -1,220 +1,131 @@
 "use client"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ResponsiveBar } from "@nivo/bar"
-import { ResponsivePie } from "@nivo/pie"
-import { ResponsiveLine } from "@nivo/line"
+import { useEffect, useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Users, Trophy, Calendar, Award } from "lucide-react"
+
+interface StatsData {
+  general: {
+    totalPlayers: number
+    totalTournaments: number
+    totalRegistrations: number
+  }
+  user: {
+    tournamentsRegistered: number
+    tournamentsCompleted: number
+    upcomingTournaments: number
+  }
+}
 
 export function DashboardStats() {
-  // Datos de ejemplo para las gráficas
-  const attendanceData = [
-    { month: "Ene", asistencia: 25 },
-    { month: "Feb", asistencia: 30 },
-    { month: "Mar", asistencia: 28 },
-    { month: "Abr", asistencia: 32 },
-    { month: "May", asistencia: 35 },
-    { month: "Jun", asistencia: 30 },
-    { month: "Jul", asistencia: 28 },
-    { month: "Ago", asistencia: 20 },
-    { month: "Sep", asistencia: 32 },
-    { month: "Oct", asistencia: 38 },
-    { month: "Nov", asistencia: 40 },
-    { month: "Dic", asistencia: 35 },
-  ]
+  const [stats, setStats] = useState<StatsData | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const genderData = [
-    { id: "Hombres", label: "Hombres", value: 60, color: "hsl(240, 33%, 18%)" },
-    { id: "Mujeres", label: "Mujeres", value: 40, color: "hsl(45, 86%, 60%)" },
-  ]
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetch("/api/dashboard/stats")
+        if (!response.ok) {
+          throw new Error("Error al cargar estadísticas")
+        }
+        const data = await response.json()
+        setStats(data)
+      } catch (err) {
+        console.error("Error al cargar estadísticas:", err)
+        setError("No se pudieron cargar las estadísticas")
+      } finally {
+        setIsLoading(false)
+      }
+    }
 
-  const tournamentTypeData = [
-    { tournament: "Fun", participantes: 45 },
-    { tournament: "Control", participantes: 35 },
-    { tournament: "CE", participantes: 30 },
-  ]
+    fetchStats()
+  }, [])
 
-  const performanceData = [
-    {
-      id: "Victorias",
-      data: [
-        { x: "Ene", y: 2 },
-        { x: "Feb", y: 3 },
-        { x: "Mar", y: 1 },
-        { x: "Abr", y: 4 },
-        { x: "May", y: 3 },
-        { x: "Jun", y: 2 },
-      ],
-    },
-    {
-      id: "Derrotas",
-      data: [
-        { x: "Ene", y: 1 },
-        { x: "Feb", y: 2 },
-        { x: "Mar", y: 3 },
-        { x: "Abr", y: 1 },
-        { x: "May", y: 2 },
-        { x: "Jun", y: 3 },
-      ],
-    },
-  ]
+  if (error) {
+    return (
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="col-span-full">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Error</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-sm text-muted-foreground">{error}</div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-      <Card className="col-span-4">
-        <CardHeader>
-          <CardTitle>Asistencia Mensual</CardTitle>
-          <CardDescription>Número de jugadores que asistieron a torneos por mes</CardDescription>
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Jugadores</CardTitle>
+          <Users className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
-        <CardContent className="h-80">
-          <ResponsiveBar
-            data={attendanceData}
-            keys={["asistencia"]}
-            indexBy="month"
-            margin={{ top: 50, right: 50, bottom: 50, left: 60 }}
-            padding={0.3}
-            colors={["hsl(45, 86%, 60%)"]}
-            axisBottom={{
-              tickSize: 5,
-              tickPadding: 5,
-              tickRotation: 0,
-            }}
-            axisLeft={{
-              tickSize: 5,
-              tickPadding: 5,
-              tickRotation: 0,
-            }}
-            labelSkipWidth={12}
-            labelSkipHeight={12}
-            animate={true}
-          />
+        <CardContent>
+          {isLoading ? (
+            <Skeleton className="h-8 w-20" />
+          ) : (
+            <>
+              <div className="text-2xl font-bold">{stats?.general.totalPlayers || 0}</div>
+              <p className="text-xs text-muted-foreground">Jugadores registrados</p>
+            </>
+          )}
         </CardContent>
       </Card>
-      <Card className="col-span-3">
-        <CardHeader>
-          <CardTitle>Distribución por Género</CardTitle>
-          <CardDescription>Porcentaje de jugadores por género</CardDescription>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Torneos</CardTitle>
+          <Trophy className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
-        <CardContent className="h-80">
-          <ResponsivePie
-            data={genderData}
-            margin={{ top: 40, right: 80, bottom: 80, left: 80 }}
-            innerRadius={0.5}
-            padAngle={0.7}
-            cornerRadius={3}
-            colors={{ datum: "data.color" }}
-            borderWidth={1}
-            borderColor={{ from: "color", modifiers: [["darker", 0.2]] }}
-            radialLabelsSkipAngle={10}
-            radialLabelsTextXOffset={6}
-            radialLabelsTextColor="#333333"
-            radialLabelsLinkOffset={0}
-            radialLabelsLinkDiagonalLength={16}
-            radialLabelsLinkHorizontalLength={24}
-            radialLabelsLinkStrokeWidth={1}
-            radialLabelsLinkColor={{ from: "color" }}
-            slicesLabelsSkipAngle={10}
-            slicesLabelsTextColor="#333333"
-            animate={true}
-            legends={[
-              {
-                anchor: "bottom",
-                direction: "row",
-                translateY: 56,
-                itemWidth: 100,
-                itemHeight: 18,
-                itemTextColor: "#999",
-                symbolSize: 18,
-                symbolShape: "circle",
-              },
-            ]}
-          />
+        <CardContent>
+          {isLoading ? (
+            <Skeleton className="h-8 w-20" />
+          ) : (
+            <>
+              <div className="text-2xl font-bold">{stats?.general.totalTournaments || 0}</div>
+              <p className="text-xs text-muted-foreground">Torneos organizados</p>
+            </>
+          )}
         </CardContent>
       </Card>
-      <Card className="col-span-3">
-        <CardHeader>
-          <CardTitle>Participación por Tipo de Torneo</CardTitle>
-          <CardDescription>Número de jugadores por tipo de torneo</CardDescription>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Inscripciones</CardTitle>
+          <Calendar className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
-        <CardContent className="h-80">
-          <ResponsiveBar
-            data={tournamentTypeData}
-            keys={["participantes"]}
-            indexBy="tournament"
-            margin={{ top: 50, right: 50, bottom: 50, left: 60 }}
-            padding={0.3}
-            colors={["hsl(240, 33%, 18%)"]}
-            axisBottom={{
-              tickSize: 5,
-              tickPadding: 5,
-              tickRotation: 0,
-            }}
-            axisLeft={{
-              tickSize: 5,
-              tickPadding: 5,
-              tickRotation: 0,
-            }}
-            labelSkipWidth={12}
-            labelSkipHeight={12}
-            animate={true}
-          />
+        <CardContent>
+          {isLoading ? (
+            <Skeleton className="h-8 w-20" />
+          ) : (
+            <>
+              <div className="text-2xl font-bold">{stats?.general.totalRegistrations || 0}</div>
+              <p className="text-xs text-muted-foreground">Inscripciones totales</p>
+            </>
+          )}
         </CardContent>
       </Card>
-      <Card className="col-span-4">
-        <CardHeader>
-          <CardTitle>Rendimiento del Equipo</CardTitle>
-          <CardDescription>Victorias y derrotas en los últimos 6 meses</CardDescription>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Mis Torneos</CardTitle>
+          <Award className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
-        <CardContent className="h-80">
-          <ResponsiveLine
-            data={performanceData}
-            margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
-            xScale={{ type: "point" }}
-            yScale={{
-              type: "linear",
-              min: 0,
-              max: "auto",
-              stacked: false,
-              reverse: false,
-            }}
-            axisTop={null}
-            axisRight={null}
-            axisBottom={{
-              tickSize: 5,
-              tickPadding: 5,
-              tickRotation: 0,
-            }}
-            axisLeft={{
-              tickSize: 5,
-              tickPadding: 5,
-              tickRotation: 0,
-            }}
-            pointSize={10}
-            pointColor={{ theme: "background" }}
-            pointBorderWidth={2}
-            pointBorderColor={{ from: "serieColor" }}
-            pointLabelYOffset={-12}
-            useMesh={true}
-            legends={[
-              {
-                anchor: "bottom-right",
-                direction: "column",
-                justify: false,
-                translateX: 100,
-                translateY: 0,
-                itemsSpacing: 0,
-                itemDirection: "left-to-right",
-                itemWidth: 80,
-                itemHeight: 20,
-                itemOpacity: 0.75,
-                symbolSize: 12,
-                symbolShape: "circle",
-                symbolBorderColor: "rgba(0, 0, 0, .5)",
-              },
-            ]}
-          />
+        <CardContent>
+          {isLoading ? (
+            <Skeleton className="h-8 w-20" />
+          ) : (
+            <>
+              <div className="text-2xl font-bold">{stats?.user.tournamentsRegistered || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                {stats?.user.tournamentsCompleted || 0} completados, {stats?.user.upcomingTournaments || 0} próximos
+              </p>
+            </>
+          )}
         </CardContent>
       </Card>
     </div>
   )
 }
-
