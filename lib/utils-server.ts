@@ -16,6 +16,12 @@ export function serializeDocument<T>(doc: any): T {
   for (const [key, value] of Object.entries(serialized)) {
     if (value instanceof Date) {
       serialized[key] = value.toISOString()
+    } else if (value instanceof ObjectId) {
+      // Convertir cualquier ObjectId a string
+      serialized[key] = value.toString()
+    } else if (value && typeof value === "object") {
+      // Recursivamente serializar objetos anidados
+      serialized[key] = serializeDocument(value)
     }
   }
 

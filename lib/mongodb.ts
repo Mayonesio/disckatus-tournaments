@@ -1,38 +1,49 @@
 import { MongoClient } from "mongodb"
 
-if (!process.env.MONGODB_URI) {
-  throw new Error("Please add your Mongo URI to .env.local")
+const MONGODB_URI = process.env.MONGODB_URI || ""
+const MONGODB_DB = process.env.MONGODB_DB
+
+if (!MONGODB_URI) {
+  throw new Error("Please define the MONGODB_URI environment variable inside .env.local")
 }
 
-const uri = process.env.MONGODB_URI
-const options = {}
-
-// Definir la interfaz para extender el tipo global
-declare global {
-  var _mongoClientPromise: Promise<MongoClient> | undefined
+if (!MONGODB_DB) {
+  throw new Error("Please define the MONGODB_DB environment variable inside .env.local")
 }
 
-let client: MongoClient
-let clientPromise: Promise<MongoClient>
+/**
+ * Global is used here to maintain a cached connection across hot reloads
+ * in development. This prevents connections growing exponentially
+ * during API Route usage.
+ */
+// @ts-ignore
+let cached = global.mongo
 
-if (process.env.NODE_ENV === "development") {
-  // En desarrollo, usa una variable global para preservar la conexión
-  if (!global._mongoClientPromise) {
-    client = new MongoClient(uri, options)
-    global._mongoClientPromise = client.connect()
+if (!cached) {
+  // @ts-ignore
+  cached = global.mongo = { conn: null, promise: null }
+}
+
+async function connectToDatabase() {
+  if (cached.conn) {
+    return cached.conn
   }
-  clientPromise = global._mongoClientPromise
-} else {
-  // En producción, es mejor no usar una variable global
-  client = new MongoClient(uri, options)
-  clientPromise = client.connect()
+
+  if (!cached.promise) {
+    // Las opciones useNewUrlParser y useUnifiedTopology están obsoletas
+    // en las versiones más recientes del cliente de MongoDB
+    cached.promise = MongoClient.connect(MONGODB_URI).then((client) => {
+      return {
+        client,
+        db: client.db(MONGODB_DB),
+      }
+    })
+  }
+  cached.conn = await cached.promise
+  return cached.conn
 }
 
-export async function connectToDatabase() {
-  const client = await clientPromise
-  const db = client.db(process.env.MONGODB_DB || "disckatus")
-  return { client, db }
-}
+const clientPromise = MongoClient.connect(MONGODB_URI)
 
+export { connectToDatabase }
 export default clientPromise
-

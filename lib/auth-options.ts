@@ -2,7 +2,7 @@ import type { NextAuthOptions } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { connectToDatabase } from "@/lib/mongodb"
-import { compare } from "bcryptjs" // Cambiado de bcrypt a bcryptjs
+import { compare } from "bcryptjs" // Manteniendo bcryptjs
 import { MongoDBAdapter } from "@auth/mongodb-adapter"
 import clientPromise from "@/lib/mongodb"
 
@@ -12,6 +12,13 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      authorization: {
+        params: {
+          prompt: "select_account", // Esto fuerza a Google a mostrar la pantalla de selección de cuenta
+          access_type: "offline",
+          response_type: "code",
+        },
+      },
     }),
     CredentialsProvider({
       name: "Credentials",
@@ -62,6 +69,42 @@ export const authOptions: NextAuthOptions = {
       }
       return session
     },
+    async signIn({ user, account }) {
+      if (account?.provider === "google") {
+        const { db } = await connectToDatabase()
+
+        // Verificar si el usuario ya existe
+        const existingUser = await db.collection("users").findOne({ email: user.email })
+
+        if (!existingUser) {
+          // Crear un nuevo usuario si no existe
+          const newUser = {
+            name: user.name,
+            email: user.email,
+            role: "player", // Rol por defecto según tu estructura
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          }
+
+          const result = await db.collection("users").insertOne(newUser)
+
+          // Crear un perfil de jugador asociado al usuario
+          const playerProfile = {
+            name: user.name,
+            email: user.email,
+            userId: result.insertedId.toString(),
+            gender: "Masculino", // Valor por defecto
+            birthdate: new Date(),
+            federationStatus: "No inscrito",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          }
+
+          await db.collection("players").insertOne(playerProfile)
+        }
+      }
+      return true
+    },
   },
   pages: {
     signIn: "/login",
@@ -72,4 +115,3 @@ export const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET,
 }
-

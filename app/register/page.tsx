@@ -1,86 +1,76 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { signIn } from "next-auth/react"
-import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Eye, EyeOff, AlertCircle, LogIn } from "lucide-react"
+import { Eye, EyeOff, AlertCircle, UserPlus } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import Link from "next/link"
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard"
-  const error = searchParams.get("error")
-  const success = searchParams.get("success")
-
+  const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [loginError, setLoginError] = useState("")
-  const [successMessage, setSuccessMessage] = useState("")
+  const [error, setError] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [activeTab, setActiveTab] = useState("email") // "email" o "google"
 
-  // Manejar errores de autenticación desde la URL
-  useEffect(() => {
-    if (error) {
-      switch (error) {
-        case "OAuthAccountNotLinked":
-          setLoginError(
-            "Esta cuenta de Google ya está asociada a otro usuario. Por favor, inicia sesión con otro método.",
-          )
-          break
-        case "OAuthSignin":
-        case "OAuthCallback":
-          setLoginError("Hubo un problema al iniciar sesión con Google. Por favor, inténtalo de nuevo.")
-          break
-        default:
-          setLoginError("Error al iniciar sesión. Por favor, inténtalo de nuevo.")
-      }
-    }
-
-    if (success === "registration") {
-      setSuccessMessage("Cuenta creada correctamente. Ahora puedes iniciar sesión.")
-    }
-  }, [error, success])
-
-  const handleEmailLogin = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    setLoginError("")
+    setError("")
+
+    // Validación básica
+    if (password !== confirmPassword) {
+      setError("Las contraseñas no coinciden")
+      setIsLoading(false)
+      return
+    }
 
     try {
-      const result = await signIn("credentials", {
-        redirect: false,
-        email,
-        password,
-        callbackUrl,
+      // Aquí iría la lógica para registrar un nuevo usuario con la API
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+        }),
       })
 
-      if (result?.error) {
-        setLoginError("Credenciales inválidas. Por favor, inténtalo de nuevo.")
-      } else if (result?.url) {
-        router.push(result.url)
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Error al registrarse")
       }
+
+      // Redirigir al login con mensaje de éxito
+      router.push("/login?success=registration")
     } catch (error) {
-      setLoginError("Ocurrió un error al iniciar sesión. Por favor, inténtalo de nuevo.")
+      console.error("Error al registrarse:", error)
+      setError(error instanceof Error ? error.message : "Error al registrarse. Por favor, inténtalo de nuevo.")
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleGoogleLogin = async (prompt?: boolean) => {
+  const handleGoogleLogin = async () => {
     setIsLoading(true)
     await signIn("google", {
-      callbackUrl,
-      prompt: prompt ? "select_account" : undefined,
+      callbackUrl: "/dashboard",
+      prompt: "select_account", // Esto fuerza a Google a mostrar la pantalla de selección de cuenta
     })
   }
 
@@ -90,30 +80,23 @@ export default function LoginPage() {
 
   return (
     <div className="container flex h-screen w-screen flex-col items-center justify-center">
-      <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+      <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[400px]">
         <div className="flex flex-col space-y-2 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight">Bienvenido a Disckatus</h1>
-          <p className="text-sm text-muted-foreground">Inicia sesión para acceder a la plataforma</p>
+          <h1 className="text-2xl font-semibold tracking-tight">Crear una cuenta</h1>
+          <p className="text-sm text-muted-foreground">Regístrate para unirte a la comunidad</p>
         </div>
 
-        {loginError && (
-          <Alert variant="destructive" className="mb-4">
+        {error && (
+          <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{loginError}</AlertDescription>
-          </Alert>
-        )}
-
-        {successMessage && (
-          <Alert className="mb-4 border-green-500 bg-green-50 text-green-800">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{successMessage}</AlertDescription>
+            <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
         <Tabs defaultValue="email" value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="email" className="flex items-center gap-2">
-              <LogIn className="h-4 w-4" />
+              <UserPlus className="h-4 w-4" />
               Email
             </TabsTrigger>
             <TabsTrigger value="google" className="flex items-center gap-2">
@@ -141,12 +124,23 @@ export default function LoginPage() {
 
           <TabsContent value="email">
             <Card>
-              <CardHeader>
-                <CardTitle>Iniciar sesión con email</CardTitle>
-                <CardDescription>Ingresa tus credenciales para acceder</CardDescription>
-              </CardHeader>
-              <form onSubmit={handleEmailLogin}>
+              <form onSubmit={handleRegister}>
+                <CardHeader>
+                  <CardTitle>Registro con email</CardTitle>
+                  <CardDescription>Completa el formulario para crear tu cuenta</CardDescription>
+                </CardHeader>
                 <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Nombre completo</Label>
+                    <Input
+                      id="name"
+                      placeholder="Tu nombre y apellidos"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                    />
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
                     <Input
@@ -158,13 +152,9 @@ export default function LoginPage() {
                       required
                     />
                   </div>
+
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="password">Contraseña</Label>
-                      <Link href="/forgot-password" className="text-xs text-primary hover:underline">
-                        ¿Olvidaste tu contraseña?
-                      </Link>
-                    </div>
+                    <Label htmlFor="password">Contraseña</Label>
                     <div className="relative">
                       <Input
                         id="password"
@@ -172,6 +162,7 @@ export default function LoginPage() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
+                        minLength={8}
                       />
                       <button
                         type="button"
@@ -182,17 +173,30 @@ export default function LoginPage() {
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
+                    <p className="text-xs text-muted-foreground">La contraseña debe tener al menos 8 caracteres</p>
                   </div>
-                  {loginError && <p className="text-sm text-destructive">{loginError}</p>}
+
+                  <div className="space-y-2">
+                    <Label htmlFor="confirm-password">Confirmar contraseña</Label>
+                    <div className="relative">
+                      <Input
+                        id="confirm-password"
+                        type={showPassword ? "text" : "password"}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-4">
                   <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}
+                    {isLoading ? "Procesando..." : "Registrarse"}
                   </Button>
                   <div className="text-center text-sm">
-                    ¿No tienes una cuenta?{" "}
-                    <Link href="/register" className="text-primary hover:underline">
-                      Regístrate
+                    ¿Ya tienes una cuenta?{" "}
+                    <Link href="/login" className="text-primary hover:underline">
+                      Inicia sesión
                     </Link>
                   </div>
                 </CardFooter>
@@ -203,14 +207,14 @@ export default function LoginPage() {
           <TabsContent value="google">
             <Card>
               <CardHeader>
-                <CardTitle>Iniciar sesión con Google</CardTitle>
-                <CardDescription>Usa tu cuenta de Google para acceder rápidamente</CardDescription>
+                <CardTitle>Registro con Google</CardTitle>
+                <CardDescription>Usa tu cuenta de Google para registrarte rápidamente</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Button
                   variant="outline"
                   className="w-full flex items-center justify-center gap-2"
-                  onClick={() => handleGoogleLogin()}
+                  onClick={handleGoogleLogin}
                   disabled={isLoading}
                 >
                   <svg className="h-4 w-4" viewBox="0 0 24 24">
@@ -231,22 +235,18 @@ export default function LoginPage() {
                       d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                     />
                   </svg>
-                  Continuar con Google
+                  Registrarse con Google
                 </Button>
-                <Button
-                  variant="ghost"
-                  className="w-full text-xs"
-                  onClick={() => handleGoogleLogin(true)}
-                  disabled={isLoading}
-                >
-                  Usar una cuenta de Google diferente
-                </Button>
+                <p className="text-xs text-center text-muted-foreground">
+                  Al registrarte con Google, crearemos automáticamente una cuenta asociada a tu correo electrónico de
+                  Google.
+                </p>
               </CardContent>
               <CardFooter className="flex flex-col gap-4">
                 <div className="text-center text-sm">
-                  ¿No tienes una cuenta?{" "}
-                  <Link href="/register" className="text-primary hover:underline">
-                    Regístrate
+                  ¿Ya tienes una cuenta?{" "}
+                  <Link href="/login" className="text-primary hover:underline">
+                    Inicia sesión
                   </Link>
                 </div>
               </CardFooter>
@@ -255,7 +255,7 @@ export default function LoginPage() {
         </Tabs>
 
         <p className="text-center text-xs text-muted-foreground">
-          Al iniciar sesión, aceptas nuestros{" "}
+          Al registrarte, aceptas nuestros{" "}
           <Link href="/terms" className="underline underline-offset-4 hover:text-primary">
             Términos de servicio
           </Link>{" "}
