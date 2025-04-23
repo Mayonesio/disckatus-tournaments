@@ -1,4 +1,3 @@
-import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth-options"
@@ -6,33 +5,30 @@ import { connectToDatabase } from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
 import { PlayerProfile } from "@/components/players/player-profile"
 import { serializePlayer } from "@/lib/utils-server"
-
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
-  const { id } = await params
-
-  try {
-    const { db } = await connectToDatabase()
-    const player = await db.collection("players").findOne({ _id: new ObjectId(id) })
-
-    if (!player) {
-      return {
-        title: "Jugador no encontrado | Disckatus Ultimate Madrid",
-      }
-    }
-
-    return {
-      title: `${player.name} | Disckatus Ultimate Madrid`,
-      description: `Perfil de ${player.name}, jugador de Disckatus Ultimate Madrid`,
-    }
-  } catch (error) {
-    return {
-      title: "Perfil de Jugador | Disckatus Ultimate Madrid",
-    }
-  }
-}
+import { getPlayerByIdOrSlug, generatePlayerSlug } from "@/lib/player-utils"
 
 interface PlayerPageProps {
   params: Promise<{ id: string }>
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params
+    const player = await getPlayerByIdOrSlug(id)
+    if (player) {
+      return {
+        title: `${player.name} | Disckatus Ultimate Madrid`,
+        description: `Perfil de jugador de ${player.name}`,
+      }
+    }
+  } catch (error) {
+    console.error("Error generating metadata:", error)
+  }
+
+  return {
+    title: "Jugador | Disckatus Ultimate Madrid",
+    description: "Perfil de jugador",
+  }
 }
 
 export default async function PlayerPage({ params }: PlayerPageProps) {
@@ -51,8 +47,8 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
   }
 
   try {
-    const { db } = await connectToDatabase()
-    const playerDoc = await db.collection("players").findOne({ _id: new ObjectId(id) })
+    // Use the new utility function to get player by ID or slug
+    const playerDoc = await getPlayerByIdOrSlug(id)
 
     if (!playerDoc) {
       notFound()
@@ -68,15 +64,32 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
     const canEdit = isAdmin || isOwner || isEmailMatch
 
     // Si el usuario es propietario por email pero no tiene userId asignado, actualizarlo
-    if (isEmailMatch && !player.userId) {
-      await db.collection("players").updateOne({ _id: new ObjectId(id) }, { $set: { userId: session.user.id } })
+    if (isEmailMatch && !player.userId && session.user.id) {
+      const { db } = await connectToDatabase()
+      await db
+        .collection("players")
+        .updateOne({ _id: new ObjectId(player._id as string) }, { $set: { userId: session.user.id } })
       // Actualizar el objeto player para reflejar el cambio
       player.userId = session.user.id
     }
 
+    // Generate slug if not exists
+    if (!player.slug && player.name) {
+      const slug = generatePlayerSlug(player.name)
+      const { db } = await connectToDatabase()
+      await db.collection("players").updateOne({ _id: new ObjectId(player._id as string) }, { $set: { slug } })
+      player.slug = slug
+    }
+
+    // Asegurarse de que _id sea string para evitar problemas de tipado
+    const playerForProfile = {
+      ...player,
+      _id: player._id?.toString(),
+    }
+
     return (
       <div className="flex-1 p-4 md:p-8 pt-6">
-        <PlayerProfile player={player} canEdit={canEdit} />
+        <PlayerProfile player={playerForProfile} canEdit={canEdit} />
       </div>
     )
   } catch (error) {

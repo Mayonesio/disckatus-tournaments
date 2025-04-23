@@ -29,7 +29,7 @@ export interface Player {
   skills?: PlayerSkill[] // Habilidades del jugador
   achievements?: string[] // Logros del jugador
   teams?: string[] // Equipos en los que ha jugado
+  slug?: string // URL slug for the player
   createdAt?: Date
   updatedAt?: Date
 }
-

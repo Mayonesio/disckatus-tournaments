@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Eye, EyeOff, AlertCircle, UserPlus } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import Link from "next/link"
+import Image from "next/image"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -66,7 +67,14 @@ export default function RegisterPage() {
     }
   }
 
+  // Función para iniciar sesión con Google (cuenta predeterminada)
   const handleGoogleLogin = async () => {
+    setIsLoading(true)
+    await signIn("google", { callbackUrl: "/dashboard" })
+  }
+
+  // Función para iniciar sesión con una cuenta de Google diferente
+  const handleDifferentGoogleAccount = async () => {
     setIsLoading(true)
     await signIn("google", {
       callbackUrl: "/dashboard",
@@ -81,7 +89,16 @@ export default function RegisterPage() {
   return (
     <div className="container flex h-screen w-screen flex-col items-center justify-center">
       <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[400px]">
-        <div className="flex flex-col space-y-2 text-center">
+        <div className="flex flex-col items-center space-y-2 text-center">
+          <div className="mb-4 h-20 w-20">
+            <Image
+              src="/images/logo-disckatus.png"
+              alt="Disckatus Logo"
+              width={80}
+              height={80}
+              className="h-full w-full object-contain"
+            />
+          </div>
           <h1 className="text-2xl font-semibold tracking-tight">Crear una cuenta</h1>
           <p className="text-sm text-muted-foreground">Regístrate para unirte a la comunidad</p>
         </div>
@@ -237,6 +254,17 @@ export default function RegisterPage() {
                   </svg>
                   Registrarse con Google
                 </Button>
+
+                {/* Botón para usar una cuenta de Google diferente */}
+                <Button
+                  variant="ghost"
+                  className="w-full text-xs"
+                  onClick={handleDifferentGoogleAccount}
+                  disabled={isLoading}
+                >
+                  Usar una cuenta de Google diferente
+                </Button>
+
                 <p className="text-xs text-center text-muted-foreground">
                   Al registrarte con Google, crearemos automáticamente una cuenta asociada a tu correo electrónico de
                   Google.

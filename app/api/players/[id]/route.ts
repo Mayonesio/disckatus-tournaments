@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth-options"
 import { ObjectId } from "mongodb"
 import { serializePlayer } from "@/lib/utils-server"
+import { generatePlayerSlug } from "@/lib/player-utils"
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -142,6 +143,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     // Asegurarse de que el userId siempre se mantenga si ya existe
     if (currentPlayer.userId && !updateData.userId) {
       updateData.userId = currentPlayer.userId
+    }
+
+    // Generar o actualizar el slug si el nombre ha cambiado
+    if (updateData.name && updateData.name !== currentPlayer.name) {
+      updateData.slug = generatePlayerSlug(updateData.name)
     }
 
     console.log("Datos de actualización:", updateData)

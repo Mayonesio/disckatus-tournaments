@@ -19,7 +19,7 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="flex-1 p-4 md:p-8 pt-6">
+    <div className="w-full">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
       </div>

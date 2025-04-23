@@ -1,0 +1,469 @@
+.
+  |-- .env.example
+  |-- .env.local
+  |-- .gitignore
+  |-- .next
+  |  |-- app-build-manifest.json
+  |  |-- build-manifest.json
+  |  |-- cache
+  |  |  |-- .rscinfo
+  |  |  |-- swc
+  |  |  |  |-- plugins
+  |  |  |  |  |-- v7_windows_x86_64_0.104.30
+  |  |  |  |  |-- v7_windows_x86_64_8.0.0
+  |  |  |-- webpack
+  |  |  |  |-- client-development
+  |  |  |  |  |-- 0.pack.gz
+  |  |  |  |  |-- 1.pack.gz
+  |  |  |  |  |-- 10.pack.gz
+  |  |  |  |  |-- 11.pack.gz
+  |  |  |  |  |-- 12.pack.gz
+  |  |  |  |  |-- 13.pack.gz
+  |  |  |  |  |-- 14.pack.gz
+  |  |  |  |  |-- 15.pack.gz
+  |  |  |  |  |-- 16.pack.gz
+  |  |  |  |  |-- 17.pack.gz
+  |  |  |  |  |-- 18.pack.gz
+  |  |  |  |  |-- 19.pack.gz
+  |  |  |  |  |-- 2.pack.gz
+  |  |  |  |  |-- 20.pack.gz
+  |  |  |  |  |-- 21.pack.gz
+  |  |  |  |  |-- 22.pack.gz
+  |  |  |  |  |-- 23.pack.gz
+  |  |  |  |  |-- 24.pack.gz
+  |  |  |  |  |-- 25.pack.gz
+  |  |  |  |  |-- 26.pack.gz
+  |  |  |  |  |-- 27.pack.gz
+  |  |  |  |  |-- 28.pack.gz
+  |  |  |  |  |-- 29.pack.gz
+  |  |  |  |  |-- 3.pack.gz
+  |  |  |  |  |-- 30.pack.gz
+  |  |  |  |  |-- 31.pack.gz
+  |  |  |  |  |-- 32.pack.gz
+  |  |  |  |  |-- 33.pack.gz
+  |  |  |  |  |-- 34.pack.gz
+  |  |  |  |  |-- 35.pack.gz
+  |  |  |  |  |-- 36.pack.gz
+  |  |  |  |  |-- 37.pack.gz
+  |  |  |  |  |-- 38.pack.gz
+  |  |  |  |  |-- 39.pack.gz
+  |  |  |  |  |-- 4.pack.gz
+  |  |  |  |  |-- 40.pack.gz
+  |  |  |  |  |-- 41.pack.gz
+  |  |  |  |  |-- 42.pack.gz
+  |  |  |  |  |-- 43.pack.gz
+  |  |  |  |  |-- 44.pack.gz
+  |  |  |  |  |-- 45.pack.gz
+  |  |  |  |  |-- 46.pack.gz
+  |  |  |  |  |-- 47.pack.gz
+  |  |  |  |  |-- 5.pack.gz
+  |  |  |  |  |-- 6.pack.gz
+  |  |  |  |  |-- 7.pack.gz
+  |  |  |  |  |-- 8.pack.gz
+  |  |  |  |  |-- 9.pack.gz
+  |  |  |  |  |-- index.pack.gz
+  |  |  |  |  |-- index.pack.gz.old
+  |  |  |  |-- client-development-fallback
+  |  |  |  |  |-- 0.pack.gz
+  |  |  |  |  |-- 1.pack.gz
+  |  |  |  |  |-- 2.pack.gz
+  |  |  |  |  |-- index.pack.gz
+  |  |  |  |  |-- index.pack.gz.old
+  |  |  |  |-- edge-server-development
+  |  |  |  |  |-- 0.pack.gz
+  |  |  |  |  |-- 1.pack.gz
+  |  |  |  |  |-- 2.pack.gz
+  |  |  |  |  |-- index.pack.gz
+  |  |  |  |  |-- index.pack.gz.old
+  |  |  |  |-- server-development
+  |  |  |  |  |-- 0.pack.gz
+  |  |  |  |  |-- 1.pack.gz
+  |  |  |  |  |-- 10.pack.gz
+  |  |  |  |  |-- 11.pack.gz
+  |  |  |  |  |-- 12.pack.gz
+  |  |  |  |  |-- 13.pack.gz
+  |  |  |  |  |-- 14.pack.gz
+  |  |  |  |  |-- 15.pack.gz
+  |  |  |  |  |-- 16.pack.gz
+  |  |  |  |  |-- 17.pack.gz
+  |  |  |  |  |-- 18.pack.gz
+  |  |  |  |  |-- 19.pack.gz
+  |  |  |  |  |-- 2.pack.gz
+  |  |  |  |  |-- 20.pack.gz
+  |  |  |  |  |-- 21.pack.gz
+  |  |  |  |  |-- 22.pack.gz
+  |  |  |  |  |-- 23.pack.gz
+  |  |  |  |  |-- 24.pack.gz
+  |  |  |  |  |-- 25.pack.gz
+  |  |  |  |  |-- 26.pack.gz
+  |  |  |  |  |-- 27.pack.gz
+  |  |  |  |  |-- 28.pack.gz
+  |  |  |  |  |-- 29.pack.gz
+  |  |  |  |  |-- 3.pack.gz
+  |  |  |  |  |-- 30.pack.gz
+  |  |  |  |  |-- 31.pack.gz
+  |  |  |  |  |-- 32.pack.gz
+  |  |  |  |  |-- 33.pack.gz
+  |  |  |  |  |-- 34.pack.gz
+  |  |  |  |  |-- 35.pack.gz
+  |  |  |  |  |-- 36.pack.gz
+  |  |  |  |  |-- 37.pack.gz
+  |  |  |  |  |-- 38.pack.gz
+  |  |  |  |  |-- 39.pack.gz
+  |  |  |  |  |-- 4.pack.gz
+  |  |  |  |  |-- 40.pack.gz
+  |  |  |  |  |-- 41.pack.gz
+  |  |  |  |  |-- 42.pack.gz
+  |  |  |  |  |-- 43.pack.gz
+  |  |  |  |  |-- 44.pack.gz
+  |  |  |  |  |-- 45.pack.gz
+  |  |  |  |  |-- 46.pack.gz
+  |  |  |  |  |-- 47.pack.gz
+  |  |  |  |  |-- 48.pack.gz
+  |  |  |  |  |-- 49.pack.gz
+  |  |  |  |  |-- 5.pack.gz
+  |  |  |  |  |-- 6.pack.gz
+  |  |  |  |  |-- 7.pack.gz
+  |  |  |  |  |-- 8.pack.gz
+  |  |  |  |  |-- 9.pack.gz
+  |  |  |  |  |-- index.pack.gz
+  |  |  |  |  |-- index.pack.gz.old
+  |  |-- react-loadable-manifest.json
+  |  |-- server
+  |  |  |-- app
+  |  |  |  |-- admin
+  |  |  |  |  |-- users
+  |  |  |  |  |  |-- page_client-reference-manifest.js
+  |  |  |  |-- api
+  |  |  |  |  |-- auth
+  |  |  |  |  |  |-- [...nextauth]
+  |  |  |  |  |  |  |-- route_client-reference-manifest.js
+  |  |  |  |  |-- dashboard
+  |  |  |  |  |  |-- recent-activity
+  |  |  |  |  |  |  |-- route_client-reference-manifest.js
+  |  |  |  |  |  |-- stats
+  |  |  |  |  |  |  |-- route_client-reference-manifest.js
+  |  |  |  |  |  |-- upcoming-tournaments
+  |  |  |  |  |  |  |-- route_client-reference-manifest.js
+  |  |  |  |  |-- players
+  |  |  |  |  |  |-- route_client-reference-manifest.js
+  |  |  |  |  |-- tournaments
+  |  |  |  |  |  |-- [id]
+  |  |  |  |  |  |  |-- register
+  |  |  |  |  |  |  |  |-- route_client-reference-manifest.js
+  |  |  |  |-- calendar
+  |  |  |  |  |-- page_client-reference-manifest.js
+  |  |  |  |-- dashboard
+  |  |  |  |  |-- page_client-reference-manifest.js
+  |  |  |  |-- login
+  |  |  |  |  |-- page_client-reference-manifest.js
+  |  |  |  |-- page_client-reference-manifest.js
+  |  |  |  |-- players
+  |  |  |  |  |-- page_client-reference-manifest.js
+  |  |  |  |  |-- [id]
+  |  |  |  |  |  |-- page_client-reference-manifest.js
+  |  |  |  |-- profile
+  |  |  |  |  |-- page_client-reference-manifest.js
+  |  |  |  |-- settings
+  |  |  |  |  |-- page_client-reference-manifest.js
+  |  |  |  |-- tournaments
+  |  |  |  |  |-- page_client-reference-manifest.js
+  |  |  |  |  |-- [id]
+  |  |  |  |  |  |-- page_client-reference-manifest.js
+  |  |  |  |-- _not-found
+  |  |  |  |  |-- page_client-reference-manifest.js
+  |  |  |-- middleware-build-manifest.js
+  |  |  |-- middleware-react-loadable-manifest.js
+  |  |  |-- next-font-manifest.js
+  |  |  |-- next-font-manifest.json
+  |  |-- static
+  |  |  |-- chunks
+  |  |  |  |-- app
+  |  |  |  |  |-- admin
+  |  |  |  |  |  |-- users
+  |  |  |  |  |-- api
+  |  |  |  |  |  |-- auth
+  |  |  |  |  |  |  |-- [...nextauth]
+  |  |  |  |  |  |-- dashboard
+  |  |  |  |  |  |  |-- recent-activity
+  |  |  |  |  |  |  |-- stats
+  |  |  |  |  |  |  |-- upcoming-tournaments
+  |  |  |  |  |  |-- players
+  |  |  |  |  |  |-- tournaments
+  |  |  |  |  |  |  |-- [id]
+  |  |  |  |  |  |  |  |-- register
+  |  |  |  |  |-- calendar
+  |  |  |  |  |-- dashboard
+  |  |  |  |  |-- layout.js
+  |  |  |  |  |-- login
+  |  |  |  |  |-- players
+  |  |  |  |  |  |-- [id]
+  |  |  |  |  |-- profile
+  |  |  |  |  |-- settings
+  |  |  |  |  |-- tournaments
+  |  |  |  |  |  |-- [id]
+  |  |  |  |  |-- _not-found
+  |  |  |  |-- pages
+  |  |  |  |-- webpack.js
+  |  |  |-- css
+  |  |  |  |-- app
+  |  |  |-- development
+  |  |  |  |-- _buildManifest.js
+  |  |  |  |-- _ssgManifest.js
+  |  |  |-- media
+  |  |  |-- webpack
+  |  |  |  |-- 108df009da026417.webpack.hot-update.json
+  |  |  |  |-- 13d3daa4c8abe830.webpack.hot-update.json
+  |  |  |  |-- 2c2a2a8a4a0b0388.webpack.hot-update.json
+  |  |  |  |-- 32578a72a12dbbd0.webpack.hot-update.json
+  |  |  |  |-- 7de7d23e779e2de8.webpack.hot-update.json
+  |  |  |  |-- 96a58bd8241d9d0f.webpack.hot-update.json
+  |  |  |  |-- a9e003d9b8feede0.webpack.hot-update.json
+  |  |  |  |-- app
+  |  |  |  |  |-- layout.108df009da026417.hot-update.js
+  |  |  |  |  |-- layout.13d3daa4c8abe830.hot-update.js
+  |  |  |  |  |-- layout.2c2a2a8a4a0b0388.hot-update.js
+  |  |  |  |  |-- layout.32578a72a12dbbd0.hot-update.js
+  |  |  |  |  |-- layout.7de7d23e779e2de8.hot-update.js
+  |  |  |  |  |-- layout.96a58bd8241d9d0f.hot-update.js
+  |  |  |  |  |-- layout.a9e003d9b8feede0.hot-update.js
+  |  |  |  |  |-- layout.d296ed7d33f81cf7.hot-update.js
+  |  |  |  |  |-- layout.fd919f96484d5092.hot-update.js
+  |  |  |  |-- d296ed7d33f81cf7.webpack.hot-update.json
+  |  |  |  |-- fd919f96484d5092.webpack.hot-update.json
+  |  |  |  |-- webpack.108df009da026417.hot-update.js
+  |  |  |  |-- webpack.13d3daa4c8abe830.hot-update.js
+  |  |  |  |-- webpack.2c2a2a8a4a0b0388.hot-update.js
+  |  |  |  |-- webpack.32578a72a12dbbd0.hot-update.js
+  |  |  |  |-- webpack.7de7d23e779e2de8.hot-update.js
+  |  |  |  |-- webpack.96a58bd8241d9d0f.hot-update.js
+  |  |  |  |-- webpack.a9e003d9b8feede0.hot-update.js
+  |  |  |  |-- webpack.d296ed7d33f81cf7.hot-update.js
+  |  |  |  |-- webpack.fd919f96484d5092.hot-update.js
+  |  |-- trace
+  |-- .npmrc
+  |-- .qodo
+  |  |-- history.sqlite
+  |-- app
+  |  |-- admin
+  |  |  |-- users
+  |  |  |  |-- page.tsx
+  |  |-- api
+  |  |  |-- admin
+  |  |  |  |-- users
+  |  |  |  |  |-- route.ts
+  |  |  |  |  |-- [id]
+  |  |  |  |  |  |-- role
+  |  |  |  |  |  |  |-- route.ts
+  |  |  |-- auth
+  |  |  |  |-- register
+  |  |  |  |  |-- route.ts
+  |  |  |  |-- [...nextauth]
+  |  |  |  |  |-- route.ts
+  |  |  |-- dashboard
+  |  |  |  |-- recent-activity
+  |  |  |  |  |-- route.ts
+  |  |  |  |-- stats
+  |  |  |  |  |-- route.ts
+  |  |  |  |-- upcoming-tournaments
+  |  |  |  |  |-- route.ts
+  |  |  |-- players
+  |  |  |  |-- route.ts
+  |  |  |  |-- [id]
+  |  |  |  |  |-- image
+  |  |  |  |  |  |-- route.ts
+  |  |  |  |  |-- route.ts
+  |  |  |  |  |-- skills
+  |  |  |  |  |  |-- route.ts
+  |  |  |-- registrations
+  |  |  |  |-- route.ts
+  |  |  |-- teams
+  |  |  |  |-- route.ts
+  |  |  |-- tournaments
+  |  |  |  |-- route.ts
+  |  |  |  |-- [id]
+  |  |  |  |  |-- register
+  |  |  |  |  |  |-- route.ts
+  |  |  |  |  |-- registrations
+  |  |  |  |  |  |-- route.ts
+  |  |  |  |  |-- route.ts
+  |  |  |-- trainings
+  |  |  |  |-- route.ts
+  |  |-- calendar
+  |  |  |-- page.tsx
+  |  |-- dashboard
+  |  |  |-- page.tsx
+  |  |-- error.tsx
+  |  |-- forgot-password
+  |  |  |-- page.tsx
+  |  |-- globals.css
+  |  |-- layout.tsx
+  |  |-- login
+  |  |  |-- loading.tsx
+  |  |  |-- page.tsx
+  |  |-- not-found.tsx
+  |  |-- page.tsx
+  |  |-- players
+  |  |  |-- new
+  |  |  |  |-- page.tsx
+  |  |  |-- page.tsx
+  |  |  |-- [id]
+  |  |  |  |-- edit
+  |  |  |  |  |-- page.tsx
+  |  |  |  |-- page.tsx
+  |  |  |  |-- skills
+  |  |  |  |  |-- page.tsx
+  |  |  |  |-- verify-skills
+  |  |  |  |  |-- page.tsx
+  |  |-- profile
+  |  |  |-- page.tsx
+  |  |-- register
+  |  |  |-- loading.tsx
+  |  |  |-- page.tsx
+  |  |-- settings
+  |  |  |-- page.tsx
+  |  |-- test-image-upload
+  |  |  |-- page.tsx
+  |  |-- tournaments
+  |  |  |-- new
+  |  |  |  |-- page.tsx
+  |  |  |-- page.tsx
+  |  |  |-- [id]
+  |  |  |  |-- edit
+  |  |  |  |  |-- page.tsx
+  |  |  |  |-- page.tsx
+  |-- components
+  |  |-- admin
+  |  |  |-- user-management.tsx
+  |  |  |-- user-role-management.tsx
+  |  |-- calendar
+  |  |  |-- full-calendar.tsx
+  |  |-- dashboard
+  |  |  |-- dashboard-stats.tsx
+  |  |  |-- recent-activity.tsx
+  |  |  |-- upcoming-tournaments.tsx
+  |  |-- frisbee-icon.tsx
+  |  |-- header.tsx
+  |  |-- mode-toggle.tsx
+  |  |-- players
+  |  |  |-- player-filters.tsx
+  |  |  |-- player-form.tsx
+  |  |  |-- player-profile.tsx
+  |  |  |-- player-skills-form.tsx
+  |  |  |-- player-skills-verification.tsx
+  |  |  |-- players-list.tsx
+  |  |  |-- profile-image-modal.tsx
+  |  |-- session-provider.tsx
+  |  |-- sidebar.tsx
+  |  |-- theme-provider.tsx
+  |  |-- tournaments
+  |  |  |-- tournament-calendar.tsx
+  |  |  |-- tournament-detail.tsx
+  |  |  |-- tournament-form.tsx
+  |  |  |-- tournament-registration.tsx
+  |  |  |-- tournaments-list.tsx
+  |  |-- ui
+  |  |  |-- accordion.tsx
+  |  |  |-- alert-dialog.tsx
+  |  |  |-- alert.tsx
+  |  |  |-- aspect-ratio.tsx
+  |  |  |-- avatar.tsx
+  |  |  |-- badge.tsx
+  |  |  |-- breadcrumb.tsx
+  |  |  |-- button.tsx
+  |  |  |-- calendar.tsx
+  |  |  |-- card.tsx
+  |  |  |-- carousel.tsx
+  |  |  |-- chart.tsx
+  |  |  |-- checkbox.tsx
+  |  |  |-- collapsible.tsx
+  |  |  |-- command.tsx
+  |  |  |-- context-menu.tsx
+  |  |  |-- dialog.tsx
+  |  |  |-- drawer.tsx
+  |  |  |-- dropdown-menu.tsx
+  |  |  |-- form.tsx
+  |  |  |-- hover-card.tsx
+  |  |  |-- input-otp.tsx
+  |  |  |-- input.tsx
+  |  |  |-- label.tsx
+  |  |  |-- menubar.tsx
+  |  |  |-- navigation-menu.tsx
+  |  |  |-- pagination.tsx
+  |  |  |-- popover.tsx
+  |  |  |-- progress.tsx
+  |  |  |-- radio-group.tsx
+  |  |  |-- resizable.tsx
+  |  |  |-- scroll-area.tsx
+  |  |  |-- select.tsx
+  |  |  |-- separator.tsx
+  |  |  |-- sheet.tsx
+  |  |  |-- sidebar.tsx
+  |  |  |-- skeleton.tsx
+  |  |  |-- slider.tsx
+  |  |  |-- sonner.tsx
+  |  |  |-- switch.tsx
+  |  |  |-- table.tsx
+  |  |  |-- tabs.tsx
+  |  |  |-- textarea.tsx
+  |  |  |-- toast.tsx
+  |  |  |-- toaster.tsx
+  |  |  |-- toggle-group.tsx
+  |  |  |-- toggle.tsx
+  |  |  |-- tooltip.tsx
+  |  |  |-- use-mobile.tsx
+  |  |  |-- use-toast.ts
+  |-- components.json
+  |-- eslint.config.mjs
+  |-- estructura_completa.txt
+  |-- estructura_proyecto.txt
+  |-- hooks
+  |  |-- use-mobile.tsx
+  |  |-- use-toast.ts
+  |-- lib
+  |  |-- auth-options.ts
+  |  |-- auth-provider.tsx
+  |  |-- mongodb.ts
+  |  |-- utils-client.ts
+  |  |-- utils-mongodb.ts
+  |  |-- utils-server.ts
+  |  |-- utils.ts
+  |-- middleware.ts
+  |-- next-env.d.ts
+  |-- next.config.mjs
+  |-- next.config.ts
+  |-- package-lock.json
+  |-- package.json
+  |-- pnpm-lock.yaml
+  |-- postcss.config.js
+  |-- postcss.config.mjs
+  |-- public
+  |  |-- placeholder-logo.png
+  |  |-- placeholder-logo.svg
+  |  |-- placeholder-user.jpg
+  |  |-- placeholder.jpg
+  |  |-- placeholder.svg
+  |-- README.md
+  |-- scripts
+  |  |-- create-admin.js
+  |  |-- fix-player-user-links.js
+  |  |-- link-users-players.js
+  |-- src
+  |  |-- app
+  |  |  |-- favicon.ico
+  |  |  |-- globals.css
+  |  |  |-- layout.tsx
+  |  |  |-- page.tsx
+  |-- styles
+  |  |-- globals.css
+  |-- tailwind.config.js
+  |-- tsconfig.json
+  |-- types
+  |  |-- next-auth.d.ts
+  |  |-- player.ts
+  |  |-- registration.ts
+  |  |-- roles.ts
+  |  |-- teams.ts
+  |  |-- tournament.ts
+  |  |-- training.ts
+  |-- v0-user-next.config.mjs

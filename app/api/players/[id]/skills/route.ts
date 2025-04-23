@@ -3,7 +3,7 @@ import { connectToDatabase } from "@/lib/mongodb"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth-options"
 import { ObjectId } from "mongodb"
-import { serializeDocument } from "@/lib/utils-server" // Importar desde utils-server
+import { serializeDocument } from "@/lib/utils-server"
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {

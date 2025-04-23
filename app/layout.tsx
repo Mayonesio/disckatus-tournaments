@@ -1,42 +1,53 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
-import "./globals.css"
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "@/lib/auth-options"
+import { cookies } from "next/headers"
+
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
-import { AuthProvider } from "@/lib/auth-provider"
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
+import { AppSidebar } from "@/components/sidebar"
+import { SessionProvider } from "@/components/session-provider"
 import Header from "@/components/header"
+
+import "./globals.css"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "Disckatus Ultimate Madrid",
-  description: "Plataforma de gestión para el equipo de Ultimate Frisbee",
-    generator: 'v0.dev'
+  description: "Plataforma de gestión para Disckatus Ultimate Madrid",
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const session = await getServerSession(authOptions)
+  const cookieStore = await cookies()
+  const defaultOpen = cookieStore.get("sidebar:state")?.value === "true"
+
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={inter.className}>
-        <AuthProvider>
-          <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-            <div className="flex min-h-screen flex-col">
-              <Header />
-              <main className="flex-1">{children}</main>
-            </div>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <SessionProvider session={session}>
+            <SidebarProvider defaultOpen={defaultOpen}>
+              <div className="flex min-h-screen bg-background">
+                <AppSidebar />
+                <SidebarInset className="flex w-full flex-1 flex-col">
+                  <Header />
+                  <main className="flex-1 overflow-auto p-4 md:p-6">{children}</main>
+                </SidebarInset>
+              </div>
+            </SidebarProvider>
             <Toaster />
-          </ThemeProvider>
-        </AuthProvider>
+          </SessionProvider>
+        </ThemeProvider>
       </body>
     </html>
   )
 }
-
-
-
-import './globals.css'

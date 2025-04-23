@@ -6,66 +6,72 @@
   :root {
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
-
-    /* Colores personalizados para Disckatus Ultimate Madrid */
-    --primary: 45 86% 60%; /* #f0ca43 - Amarillo/dorado */
-    --primary-foreground: 240 33% 18%; /* #1d1f3e - Azul oscuro */
-
-    --secondary: 240 33% 18%; /* #1d1f3e - Azul oscuro */
-    --secondary-foreground: 0 0% 100%; /* #ffffff - Blanco */
-
-    --accent: 45 86% 60%; /* #f0ca43 - Amarillo/dorado */
-    --accent-foreground: 240 33% 18%; /* #1d1f3e - Azul oscuro */
-
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
-
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
 
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
+    /* Disckatus team colors */
+    --primary: 217 60% 21%; /* #163058 - Disckatus blue */
+    --primary-foreground: 0 0% 98%;
+    --secondary: 49 97% 64%; /* #fdd947 - Disckatus yellow */
+    --secondary-foreground: 240 5.9% 10%;
 
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 49 97% 64%; /* #fdd947 - Disckatus yellow */
+    --accent-foreground: 240 5.9% 10%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-
-    --ring: 240 5% 64.9%;
-
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 217 60% 21%; /* #163058 - Disckatus blue */
     --radius: 0.5rem;
+
+    /* Sidebar variables */
+    --sidebar-background: 217 60% 21%; /* #163058 - Disckatus blue */
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 49 97% 64%; /* #fdd947 - Disckatus yellow */
+    --sidebar-primary-foreground: 240 5.9% 10%;
+    --sidebar-accent: 217 60% 30%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 217 60% 30%;
+    --sidebar-ring: 49 97% 64%; /* #fdd947 - Disckatus yellow */
   }
 
   .dark {
-    --background: 240 33% 18%; /* #1d1f3e - Azul oscuro */
+    --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
-
-    --primary: 45 86% 60%; /* #f0ca43 - Amarillo/dorado */
-    --primary-foreground: 240 33% 18%; /* #1d1f3e - Azul oscuro */
-
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-
-    --accent: 45 86% 60%; /* #f0ca43 - Amarillo/dorado */
-    --accent-foreground: 240 33% 18%; /* #1d1f3e - Azul oscuro */
-
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-
-    --card: 240 33% 18%; /* #1d1f3e - Azul oscuro */
+    --card: 240 10% 3.9%;
     --card-foreground: 0 0% 98%;
-
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
 
+    /* Disckatus team colors for dark mode */
+    --primary: 49 97% 64%; /* #fdd947 - Disckatus yellow */
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 217 60% 21%; /* #163058 - Disckatus blue */
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 217 60% 21%; /* #163058 - Disckatus blue */
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
+    --ring: 49 97% 64%; /* #fdd947 - Disckatus yellow */
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 85.7% 97.3%;
-
-    --ring: 240 3.7% 15.9%;
+    /* Sidebar variables */
+    --sidebar-background: 217 60% 21%; /* #163058 - Disckatus blue */
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 49 97% 64%; /* #fdd947 - Disckatus yellow */
+    --sidebar-primary-foreground: 240 5.9% 10%;
+    --sidebar-accent: 217 60% 30%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 217 60% 30%;
+    --sidebar-ring: 49 97% 64%; /* #fdd947 - Disckatus yellow */
   }
 }
 
@@ -77,4 +83,3 @@
     @apply bg-background text-foreground;
   }
 }
-

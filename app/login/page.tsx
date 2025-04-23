@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Eye, EyeOff, AlertCircle, LogIn } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import Link from "next/link"
+import Image from "next/image"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -91,7 +92,16 @@ export default function LoginPage() {
   return (
     <div className="container flex h-screen w-screen flex-col items-center justify-center">
       <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-        <div className="flex flex-col space-y-2 text-center">
+        <div className="flex flex-col items-center space-y-2 text-center">
+          <div className="mb-4 h-20 w-20">
+            <Image
+              src="/images/logo-disckatus.png"
+              alt="Disckatus Logo"
+              width={80}
+              height={80}
+              className="h-full w-full object-contain"
+            />
+          </div>
           <h1 className="text-2xl font-semibold tracking-tight">Bienvenido a Disckatus</h1>
           <p className="text-sm text-muted-foreground">Inicia sesión para acceder a la plataforma</p>
         </div>

@@ -51,7 +51,7 @@ export function PlayerSkillsForm({ playerId, initialSkills }: PlayerSkillsFormPr
   const form = useForm<SkillsFormValues>({
     resolver: zodResolver(skillsFormSchema),
     defaultValues: {
-      skills: initialSkills || defaultSkills,
+      skills: Array.isArray(initialSkills) && initialSkills.length > 0 ? initialSkills : defaultSkills,
     },
   })
 
@@ -96,35 +96,65 @@ export function PlayerSkillsForm({ playerId, initialSkills }: PlayerSkillsFormPr
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent className="space-y-6">
-            {form.watch("skills").map((skill, index) => (
-              <FormField
-                key={index}
-                control={form.control}
-                name={`skills.${index}.value`}
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center justify-between">
-                      <FormLabel>{skill.name}</FormLabel>
-                      <span className="font-bold">{field.value}</span>
-                    </div>
-                    <FormControl>
-                      <Slider
-                        min={0}
-                        max={100}
-                        step={1}
-                        value={[field.value]}
-                        onValueChange={(value) => field.onChange(value[0])}
-                        disabled={isLoading}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Mueve el deslizador para ajustar tu nivel en {skill.name.toLowerCase()}
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            ))}
+            {Array.isArray(form.watch("skills"))
+              ? form.watch("skills").map((skill, index) => (
+                  <FormField
+                    key={index}
+                    control={form.control}
+                    name={`skills.${index}.value`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className="flex items-center justify-between">
+                          <FormLabel>{skill.name}</FormLabel>
+                          <span className="font-bold">{field.value}</span>
+                        </div>
+                        <FormControl>
+                          <Slider
+                            min={0}
+                            max={100}
+                            step={1}
+                            value={[field.value]}
+                            onValueChange={(value) => field.onChange(value[0])}
+                            disabled={isLoading}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Mueve el deslizador para ajustar tu nivel en {skill.name.toLowerCase()}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                ))
+              : defaultSkills.map((skill, index) => (
+                  <FormField
+                    key={index}
+                    control={form.control}
+                    name={`skills.${index}.value`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className="flex items-center justify-between">
+                          <FormLabel>{skill.name}</FormLabel>
+                          <span className="font-bold">{field.value || skill.value}</span>
+                        </div>
+                        <FormControl>
+                          <Slider
+                            min={0}
+                            max={100}
+                            step={1}
+                            value={[field.value || skill.value]}
+                            onValueChange={(value) => field.onChange(value[0])}
+                            disabled={isLoading}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Mueve el deslizador para ajustar tu nivel en {skill.name.toLowerCase()}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                ))}
           </CardContent>
           <CardFooter className="flex justify-between">
             <Button variant="outline" type="button" onClick={() => router.back()} disabled={isLoading}>
@@ -140,4 +170,3 @@ export function PlayerSkillsForm({ playerId, initialSkills }: PlayerSkillsFormPr
     </Card>
   )
 }
-
